@@ -1,0 +1,43 @@
+@startuml
+
+entity "User" as user {
+    id
+    --
+    affiliation_id
+    --
+    name
+    surname
+    birth_date
+}
+
+entity "Affiliation" as affiliation {
+    id
+    --
+    provider_id
+    --
+    company_name
+}
+
+entity "Provider" as provider {
+    id
+    --
+    name
+    user_limit
+}
+
+entity "Accounting" as accounting {
+    id
+    --
+    user_id
+    --
+    amount
+    type
+    tax_charged
+    date_paid
+}
+
+user ||--o{ affiliation
+accounting ||-right-o{ user
+provider }o--|| affiliation
+
+@enduml

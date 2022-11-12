@@ -1,0 +1,114 @@
+{
+  "db": "PostgreSQL",
+  "324b215a8e110154f8b36612d99001d4967cbe01b2f07ec8e5eaa1ff0f0dd819": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "task_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "uuid!",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "endpoint",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "status",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "iteration",
+          "ordinal": 5,
+          "type_info": "Int4"
+        },
+        {
+          "name": "updated_at",
+          "ordinal": 6,
+          "type_info": "Timestamp"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        null,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                insert into job (task_id, endpoint, status)\n                values ($1, $2, $3)\n                returning id, task_id, uuid::text as \"uuid!\", endpoint, status, iteration, updated_at\n                "
+  },
+  "63819a4dffe312a5798c1fbbc53f9565c78ca7c07a3b8c5d17cf5068b5a67268": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "uuid!",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "endpoints",
+          "ordinal": 2,
+          "type_info": "TextArray"
+        },
+        {
+          "name": "status",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "iterations",
+          "ordinal": 4,
+          "type_info": "Int4"
+        },
+        {
+          "name": "meta",
+          "ordinal": 5,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        null,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "TextArray",
+          "Text",
+          "Int4",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            insert into task (endpoints, status, iterations, meta)\n            values ($1, $2, $3, $4)\n            returning id, uuid::text as \"uuid!\", endpoints, status, iterations, meta\n            "
+  }
+}

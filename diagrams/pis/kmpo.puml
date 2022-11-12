@@ -1,0 +1,124 @@
+@startuml
+hide empty description
+
+entity "Транзакция" as transaction {
+    Сумма списания
+    Статус транзакции
+    Дата транзакции
+}
+
+entity "Платёжная сессия" as session {
+    Тип сессии
+    Статус сессии
+    Время жизни сессии
+}
+
+entity "Терминал" as terminal {
+    Конфигурация
+}
+
+entity "Карта" as card {
+    Фингерпринт пользователя
+    Номер карты
+    Дата истечения карты
+    Имя владельца карты
+    Секретный код
+}
+
+entity "Банк-партнёр" as bank {
+    Название
+    Лимит платёжных сессий
+    Длительность договора
+}
+
+entity "Клиент" as client {
+    Название
+    Лимит платёжных сессий
+    Длительность договора
+    Настройки уведомлений
+}
+
+entity "Платёжный метод" as method {
+    Название
+    Флаг доступности
+    Настройки платёжной сессии
+}
+
+entity "Уведомление" as notif {
+    Интервал отправки
+}
+
+
+usecase opens [
+Открывает
+--
+Принадлежит
+]
+usecase builds [
+Порождает
+--
+Порождается
+]
+usecase uses [
+Использует
+--
+Используется
+]
+usecase loans [
+Связывается
+--
+Предоставляет счёт
+]
+usecase has [
+Имеет
+--
+Принадлежит
+]
+usecase links [
+Связывается
+]
+usecase configures1 [
+Настраивает
+--
+Настраивается
+]
+usecase configures2 [
+Настраивает
+--
+Настраивается
+]
+usecase checks [
+Проверяет статус
+--
+Сообщает статус
+]
+
+
+terminal -- opens : 0,N
+opens -- session : 1,1
+
+session -- builds : 0,1
+builds -- transaction : 1,1
+
+session -- uses : 0,1
+uses -- card : 0,N
+
+terminal -- loans : 1,1
+loans -- bank : 1,N
+
+client -- has : 1,N
+has -- method : 1,1
+
+method -- links : 1,1
+links -- terminal : 1,N
+
+method -- configures1 : 0,N
+configures1 -- session : 1,1
+
+client -- configures2 : 0,N
+configures2 -- notif : 1,1
+
+notif -- checks : 1,1
+checks -- transaction : 1,1
+
+@enduml

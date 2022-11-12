@@ -1,0 +1,286 @@
+{
+  "db": "PostgreSQL",
+  "4c7c83032ad93acb75fbb6d26057ec03c6baecb5bbc6d754652bfff607655eb5": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "affiliation_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "surname",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "birth_date",
+          "ordinal": 4,
+          "type_info": "Timestamp"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Text",
+          "Text",
+          "Timestamp"
+        ]
+      }
+    },
+    "query": "\n            insert into \"user\" (affiliation_id, name, surname, birth_date)\n            values ($1, $2, $3, $4)\n            returning id, affiliation_id, name, surname, birth_date\n            "
+  },
+  "5d9398ad59d466c50a893b5a09bd480fe3758fa7dbcc8db5df96e9521e52a81e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "user_limit",
+          "ordinal": 2,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            select p.id, name, user_limit from provider p\n            inner join affiliation a on p.id = a.provider_id\n            where a.company_name like $1\n            "
+  },
+  "665a2eecdcad9e540b16782646470762ac5297d781341f9d9b63060110463cb6": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Int4",
+          "Text",
+          "Int4",
+          "Timestamp"
+        ]
+      }
+    },
+    "query": "\n            insert into \"accounting\" (user_id, amount, payment_type, tax_charged, date_paid)\n            values ($1, $2, $3, $4, $5)\n            "
+  },
+  "6da00f7413cb7b613eea6e7e64f6da4e8c2de06061e0a2dab63da6fad391662b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "affiliation_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "surname",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "birth_date",
+          "ordinal": 4,
+          "type_info": "Timestamp"
+        },
+        {
+          "name": "company_name",
+          "ordinal": 5,
+          "type_info": "Text"
+        },
+        {
+          "name": "provider_name",
+          "ordinal": 6,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            with all_data as (select u.id,\n                         u.affiliation_id,\n                         u.name,\n                         u.surname,\n                         u.birth_date,\n                         af.company_name,\n                         p.name provider_name\n                  from \"user\" u\n                           inner join affiliation af on af.id = u.affiliation_id\n                           inner join provider p on af.provider_id = p.id)\n\n            select id, affiliation_id, name, surname, birth_date, company_name, provider_name\n            from all_data\n            where provider_name like $1\n            "
+  },
+  "6e5d9399db300dba10beb1200c75e6dabd27963af59588621f510d61f7462d21": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "user_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "amount",
+          "ordinal": 2,
+          "type_info": "Int4"
+        },
+        {
+          "name": "payment_type",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "tax_charged",
+          "ordinal": 4,
+          "type_info": "Int4"
+        },
+        {
+          "name": "date_paid",
+          "ordinal": 5,
+          "type_info": "Timestamp"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n            select id, user_id, amount, payment_type, tax_charged, date_paid from accounting\n            where user_id = $1\n            "
+  },
+  "853097e2ba73b87d48d252d2ab58d3664e305d47f2a033a638b795305847b5a3": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n            delete from \"user\"\n            where id = $1\n            "
+  },
+  "87024d4acb7e436b8e705c93395c8e41dec2950c783ee75ff0c0bd432ca37fc8": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n            delete from accounting\n            where user_id = $1\n            "
+  },
+  "a7f61c79a02d9f82dbdfec364991a0b91838732ecb6dc3d3790bbe53ec45d411": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n            insert into \"provider\" (name, user_limit)\n            values ($1, $2)\n            "
+  },
+  "b8ee044b9318a82a1710ddbd18236fa874be39e1be95a52f9d083d2ce15be3ff": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "affiliation_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "name",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "surname",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "birth_date",
+          "ordinal": 4,
+          "type_info": "Timestamp"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            select id, affiliation_id, name, surname, birth_date from \"user\"\n            where name like $1 and surname like $2\n            "
+  }
+}
