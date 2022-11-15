@@ -1,9 +1,12 @@
-use std::collections::HashMap;
+use std::thread::sleep;
+use std::time::Duration;
 use crate::AppConfig;
 use clap::Parser;
-use sqlx::{PgPool, Pool, Postgres};
-use crate::repository::{Manager, ManagerRepository};
+use sqlx::PgPool;
+use util::clients::{LoaderClient, LoaderClientStub};
+use crate::repository::ManagerRepository;
 use crate::api::{hello_world, create_load_task};
+use crate::processor::Processor;
 
 #[derive(Parser)]
 #[clap(name = "manager")]
@@ -11,11 +14,6 @@ use crate::api::{hello_world, create_load_task};
 pub(crate) enum CMD {
     Manager,
     Generator,
-}
-
-pub(crate) struct Repository {
-    pub(crate) pool: Pool<Postgres>,
-    pub(crate) manager: Box<dyn Manager + Sync + Send>,
 }
 
 pub(crate) async fn run_manager_cmd(config: &AppConfig) -> anyhow::Result<()> {
@@ -30,9 +28,10 @@ pub(crate) async fn run_manager_cmd(config: &AppConfig) -> anyhow::Result<()> {
                     create_load_task
                 ],
             )
-            .manage(Repository {
+            .manage(Processor {
                 pool,
                 manager: Box::new(ManagerRepository {}),
+                loader: Box::new(LoaderClientStub {}),
             })
             .launch()
             .await;
@@ -46,11 +45,31 @@ pub(crate) async fn run_manager_cmd(config: &AppConfig) -> anyhow::Result<()> {
 }
 
 pub(crate) async fn run_generator_cmd(config: &AppConfig) -> anyhow::Result<()> {
-    let resp = reqwest::get("https://httpbin.org/ip")
-        .await?
-        .json::<HashMap<String, String>>()
-        .await?;
+    let r = Processor {
+        pool: PgPool::connect(&config.database_url).await?,
+        manager: Box::new(ManagerRepository {}),
+        loader: Box::new(LoaderClient {}),
+    };
 
-    println!("{:#?}", resp);
+    loop {
+        match r.process_queue().await {
+            Ok(result) => match result {
+                Some(_) => println!("Message successfully handled"),
+                None => {
+                    if config.poll == 0 {
+                        println!("No jobs in queue. Exiting....");
+                        break;
+                    }
+                    println!("Got no new jobs. Sleeping....");
+                    sleep(Duration::from_secs(1));
+                }
+            }
+            Err(err) => {
+                println!("Got got an error: {}. Recovering....", err);
+                sleep(Duration::from_secs(1));
+            }
+        }
+    }
+
     Ok(())
 }

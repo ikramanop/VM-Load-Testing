@@ -3,10 +3,10 @@ pub(crate) mod models;
 use chrono::{Duration, Utc};
 use rand::{SeedableRng};
 use sqlx::{Postgres, Transaction};
-use crate::api::models::{ApiProviderCreateRequest, ApiUserCreateRequest};
 use crate::repository::models::{Provider, User, UserExt, Accounting as AccountingModel};
 use rand::prelude::SliceRandom;
 use rand::rngs::StdRng;
+use util::models::loader::{ApiProviderCreateRequest, ApiUserCreateRequest};
 
 const AMOUNTS: &[i32] = &[100000, 150000, 200000];
 const TYPES: &[&str] = &["advance", "salary", "vacation"];

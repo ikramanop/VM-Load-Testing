@@ -1,62 +1,17 @@
 {
   "db": "PostgreSQL",
-  "324b215a8e110154f8b36612d99001d4967cbe01b2f07ec8e5eaa1ff0f0dd819": {
+  "4a25a4b57cc3c0bea6b6174e4e9856a09114b57a3de870395d89b2b671672f55": {
     "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Int4"
-        },
-        {
-          "name": "task_id",
-          "ordinal": 1,
-          "type_info": "Int4"
-        },
-        {
-          "name": "uuid!",
-          "ordinal": 2,
-          "type_info": "Text"
-        },
-        {
-          "name": "endpoint",
-          "ordinal": 3,
-          "type_info": "Text"
-        },
-        {
-          "name": "status",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "iteration",
-          "ordinal": 5,
-          "type_info": "Int4"
-        },
-        {
-          "name": "updated_at",
-          "ordinal": 6,
-          "type_info": "Timestamp"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        null,
-        false,
-        false,
-        false,
-        false
-      ],
+      "columns": [],
+      "nullable": [],
       "parameters": {
         "Left": [
           "Int4",
-          "Text",
           "Text"
         ]
       }
     },
-    "query": "\n                insert into job (task_id, endpoint, status)\n                values ($1, $2, $3)\n                returning id, task_id, uuid::text as \"uuid!\", endpoint, status, iteration, updated_at\n                "
+    "query": "\n                insert into queue (task_id, endpoint)\n                values ($1, $2)\n                "
   },
   "63819a4dffe312a5798c1fbbc53f9565c78ca7c07a3b8c5d17cf5068b5a67268": {
     "describe": {
@@ -110,5 +65,80 @@
       }
     },
     "query": "\n            insert into task (endpoints, status, iterations, meta)\n            values ($1, $2, $3, $4)\n            returning id, uuid::text as \"uuid!\", endpoints, status, iterations, meta\n            "
+  },
+  "8960e0a6c2b256916283a5f1d5b99181c98dbab8f3e44ddc9b480c666868f3c7": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "task_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "endpoint",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "response",
+          "ordinal": 3,
+          "type_info": "Float8"
+        },
+        {
+          "name": "status",
+          "ordinal": 4,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n            with next_job as (\n                select id from queue\n                where status = 0\n                limit 1\n                for update skip locked\n            )\n            update queue\n            set\n                status = 1\n            from next_job\n            where queue.id = next_job.id\n            returning queue.id, task_id, endpoint, response, status\n            "
+  },
+  "a1e14a1eba06e82eaceec4e3c95bc00e4d9807af338b976053a0225e3be7942c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "count!",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            select count(1) as \"count!\" from task\n            where status = $1\n            "
+  },
+  "d434789db2583b5b04bccc019157a53a6f20f5e282bca7fa5cccf3458a12ed8b": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Float8"
+        ]
+      }
+    },
+    "query": "\n            update queue\n            set\n                status = 2,\n                response = $2\n            where id = $1\n            "
   }
 }

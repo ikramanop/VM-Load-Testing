@@ -4,6 +4,7 @@ mod api;
 mod cmd;
 mod config;
 mod repository;
+mod processor;
 
 #[macro_use]
 extern crate rocket;

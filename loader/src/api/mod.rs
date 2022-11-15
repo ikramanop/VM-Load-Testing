@@ -3,12 +3,11 @@ use rocket::serde::json::Json;
 use rocket::State;
 use rocket_validation::Validated;
 
-use crate::api::models::{ApiAccountingStatistics, ApiErrorMessage, ApiErrors, ApiGetUsersByProviderRequest, ApiGetUsersByProviderResponse, ApiOkMessage, ApiProviderCreateRequest, ApiUserAccumulated, ApiUserCreateRequest, ApiUserDeleteRequest};
+use util::models::loader::{ApiAccountingStatistics, ApiGetUsersByProviderRequest,
+                           ApiGetUsersByProviderResponse, ApiProviderCreateRequest,
+                           ApiUserAccumulated, ApiUserCreateRequest, ApiUserDeleteRequest};
+use util::models::{ApiErrorMessage, ApiErrors, ApiOkMessage, ApiResult};
 use crate::cmd::Repository;
-
-pub(crate) mod models;
-
-type ApiResult<T> = Result<T, Json<ApiErrorMessage>>;
 
 #[post("/hello/world")]
 pub(crate) async fn hello_world(_r: &State<Repository>) -> ApiResult<Json<ApiOkMessage>> {
@@ -24,10 +23,10 @@ pub(crate) async fn create_user(
 ) -> ApiResult<Json<ApiOkMessage>> {
     let mut tx = match r.pool.begin().await {
         Ok(tx) => tx,
-        Err(err) => return Err(Json(ApiErrorMessage {
+        Err(err) => return Err(ApiErrorMessage {
             code: ApiErrors::DatabaseError as i8,
             message: ApiErrors::wrap_error(err),
-        }))
+        })
     };
 
     let provider = match r.accounting.get_provider_by_affiliation(&mut tx, &request.0.company_name).await {
@@ -35,10 +34,10 @@ pub(crate) async fn create_user(
         Err(err) => {
             tx.rollback().await;
 
-            return Err(Json(ApiErrorMessage {
+            return Err(ApiErrorMessage {
                 code: ApiErrors::DatabaseError as i8,
                 message: ApiErrors::wrap_anyhow_error(err),
-            }));
+            });
         }
     };
 
@@ -47,10 +46,10 @@ pub(crate) async fn create_user(
         Err(err) => {
             tx.rollback().await;
 
-            return Err(Json(ApiErrorMessage {
+            return Err(ApiErrorMessage {
                 code: ApiErrors::DatabaseError as i8,
                 message: ApiErrors::wrap_anyhow_error(err),
-            }));
+            });
         }
     };
 
@@ -59,10 +58,10 @@ pub(crate) async fn create_user(
         Err(err) => {
             tx.rollback().await;
 
-            return Err(Json(ApiErrorMessage {
+            return Err(ApiErrorMessage {
                 code: ApiErrors::DatabaseError as i8,
                 message: ApiErrors::wrap_anyhow_error(err),
-            }));
+            });
         }
     };
 
@@ -80,10 +79,10 @@ pub(crate) async fn create_provider(
 ) -> ApiResult<Json<ApiOkMessage>> {
     let mut tx = match r.pool.begin().await {
         Ok(tx) => tx,
-        Err(err) => return Err(Json(ApiErrorMessage {
+        Err(err) => return Err(ApiErrorMessage {
             code: ApiErrors::DatabaseError as i8,
             message: ApiErrors::wrap_error(err),
-        }))
+        })
     };
 
     match r.accounting.create_provider(&mut tx, &request.0).await {
@@ -91,10 +90,10 @@ pub(crate) async fn create_provider(
         Err(err) => {
             tx.rollback().await;
 
-            return Err(Json(ApiErrorMessage {
+            return Err(ApiErrorMessage {
                 code: ApiErrors::DatabaseError as i8,
                 message: ApiErrors::wrap_anyhow_error(err),
-            }));
+            });
         }
     };
 
@@ -112,10 +111,10 @@ pub(crate) async fn get_users_by_provider(
 ) -> ApiResult<Json<ApiGetUsersByProviderResponse>> {
     let mut tx = match r.pool.begin().await {
         Ok(tx) => tx,
-        Err(err) => return Err(Json(ApiErrorMessage {
+        Err(err) => return Err(ApiErrorMessage {
             code: ApiErrors::DatabaseError as i8,
             message: ApiErrors::wrap_error(err),
-        }))
+        })
     };
 
     let users = match r.accounting.filter_users_by_provider(&mut tx, &request.0.provider).await {
@@ -123,10 +122,10 @@ pub(crate) async fn get_users_by_provider(
         Err(err) => {
             tx.rollback().await;
 
-            return Err(Json(ApiErrorMessage {
+            return Err(ApiErrorMessage {
                 code: ApiErrors::DatabaseError as i8,
                 message: ApiErrors::wrap_anyhow_error(err),
-            }));
+            });
         }
     };
 
@@ -138,10 +137,10 @@ pub(crate) async fn get_users_by_provider(
             Err(err) => {
                 tx.rollback().await;
 
-                return Err(Json(ApiErrorMessage {
+                return Err(ApiErrorMessage {
                     code: ApiErrors::DatabaseError as i8,
                     message: ApiErrors::wrap_anyhow_error(err),
-                }));
+                });
             }
         };
 
@@ -198,10 +197,10 @@ pub(crate) async fn delete_user(
 ) -> ApiResult<Json<ApiOkMessage>> {
     let mut tx = match r.pool.begin().await {
         Ok(tx) => tx,
-        Err(err) => return Err(Json(ApiErrorMessage {
+        Err(err) => return Err(ApiErrorMessage {
             code: ApiErrors::DatabaseError as i8,
             message: ApiErrors::wrap_error(err),
-        }))
+        })
     };
 
     let user = match r.accounting.search_for_user(&mut tx, &request.0.name, &request.0.surname).await {
@@ -209,10 +208,10 @@ pub(crate) async fn delete_user(
         Err(err) => {
             tx.rollback().await;
 
-            return Err(Json(ApiErrorMessage {
+            return Err(ApiErrorMessage {
                 code: ApiErrors::DatabaseError as i8,
                 message: ApiErrors::wrap_anyhow_error(err),
-            }));
+            });
         }
     };
 
@@ -221,10 +220,10 @@ pub(crate) async fn delete_user(
         Err(err) => {
             tx.rollback().await;
 
-            return Err(Json(ApiErrorMessage {
+            return Err(ApiErrorMessage {
                 code: ApiErrors::DatabaseError as i8,
                 message: ApiErrors::wrap_anyhow_error(err),
-            }));
+            });
         }
     };
 
@@ -233,10 +232,10 @@ pub(crate) async fn delete_user(
         Err(err) => {
             tx.rollback().await;
 
-            return Err(Json(ApiErrorMessage {
+            return Err(ApiErrorMessage {
                 code: ApiErrors::DatabaseError as i8,
                 message: ApiErrors::wrap_anyhow_error(err),
-            }));
+            });
         }
     };
 

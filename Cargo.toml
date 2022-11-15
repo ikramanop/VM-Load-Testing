@@ -1,7 +1,7 @@
 [workspace]
 
 members = [
-    "worker",
     "loader",
-    "manager"
+    "manager",
+    "util"
 ]

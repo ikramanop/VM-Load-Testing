@@ -10,20 +10,11 @@ create table task
     meta       text    not null
 );
 
-create table job
-(
-    id         serial    not null primary key,
-    task_id    integer   not null references task (id),
-    uuid       uuid      not null default uuid_generate_v4(),
-    endpoint   text      not null,
-    status     text      not null,
-    iteration  integer   not null default 0,
-    updated_at timestamp not null default now()
-);
-
-create table statistic
+create table queue
 (
     id       serial  not null primary key,
     task_id  integer not null references task (id),
-    response float   not null
-)
+    endpoint text    not null,
+    response float   null,
+    status   integer not null default 0
+);

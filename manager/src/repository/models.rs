@@ -1,4 +1,3 @@
-use chrono::NaiveDateTime;
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -12,19 +11,10 @@ pub(crate) struct Task {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct Job {
+pub(crate) struct QueueItem {
     pub(crate) id: i32,
     pub(crate) task_id: i32,
-    pub(crate) uuid: String,
     pub(crate) endpoint: String,
-    pub(crate) status: String,
-    pub(crate) iteration: i32,
-    pub(crate) updated_at: NaiveDateTime,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct Statistic {
-    pub(crate) id: i32,
-    pub(crate) task_id: i32,
-    pub(crate) response: f32,
+    pub(crate) response: Option<f64>,
+    pub(crate) status: i32,
 }
