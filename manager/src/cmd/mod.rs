@@ -5,7 +5,7 @@ use clap::Parser;
 use sqlx::PgPool;
 use util::clients::{LoaderClient, LoaderClientStub};
 use crate::repository::ManagerRepository;
-use crate::api::{hello_world, create_load_task};
+use crate::api::{hello_world, create_load_task, get_task_summary};
 use crate::processor::Processor;
 
 #[derive(Parser)]
@@ -25,7 +25,8 @@ pub(crate) async fn run_manager_cmd(config: &AppConfig) -> anyhow::Result<()> {
                 "/",
                 routes![
                     hello_world,
-                    create_load_task
+                    create_load_task,
+                    get_task_summary
                 ],
             )
             .manage(Processor {

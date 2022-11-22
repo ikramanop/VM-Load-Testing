@@ -1,0 +1,153 @@
+@startuml
+hide empty description
+
+entity "Transaction" as transaction {
+    Identifier
+    --
+    Amount
+    Status
+    Creation time
+    Update time
+}
+
+entity "Payment Session" as session {
+    Identifier
+    --
+    Type
+    Status
+    Creation time
+    Expire time
+    Update time
+}
+
+entity "Terminal" as terminal {
+    Identifier
+    --
+    Configuration
+    Creation time
+    Update time
+}
+
+entity "Card" as card {
+    Identifier
+    --
+    User fingerprint
+    Card number
+    Card expiration
+    Card holder
+    Card secret
+    Creation time
+    Last usage time
+}
+
+entity "Parner Bank" as bank {
+    Identifier
+    --
+    Name
+    Sessions limit
+    Agreement start time
+    Agreement end time
+}
+
+entity "Client" as client {
+    Identifier
+    --
+    Name
+    Sessions limit
+    Agreement start time
+    Agreement end time
+    Notifications config
+}
+
+entity "Payment Method" as method {
+    Identifier
+    --
+    Name
+    Status
+    Creation time
+    Update time
+    Session config
+}
+
+entity "Notification" as notif {
+    Identifier
+    --
+    Schedule interval
+    Creation time
+    Last send time
+}
+
+
+usecase opens [
+Opens
+--
+Has
+]
+usecase builds [
+Creates
+--
+Created
+]
+usecase uses [
+Uses
+--
+Used
+]
+usecase loans [
+Connects
+--
+Loans
+]
+usecase has [
+Has
+--
+Belongs
+]
+usecase links [
+Links
+]
+usecase configures1 [
+Configures
+--
+Configured
+]
+usecase configures2 [
+Configures
+--
+Configured
+]
+usecase checks [
+Checks
+--
+Notifies
+]
+
+
+terminal -- opens : 0,N
+opens -- session : 1,1
+
+session -- builds : 0,1
+builds -- transaction : 1,1
+
+session -- uses : 0,1
+uses -- card : 0,N
+
+terminal -- loans : 1,1
+loans -- bank : 1,N
+
+client -- has : 1,N
+has -- method : 1,1
+
+method -- links : 1,1
+links -- terminal : 1,N
+
+method -- configures1 : 0,N
+configures1 -- session : 1,1
+
+client -- configures2 : 0,N
+configures2 -- notif : 1,1
+
+notif -- checks : 1,1
+checks -- transaction : 1,1
+
+@enduml

@@ -1,0 +1,5 @@
+db_user: loader
+db_password: loader
+db_name: loader
+
+loader_rpm: loader-0.1.0-1.el7.x86_64.rpm

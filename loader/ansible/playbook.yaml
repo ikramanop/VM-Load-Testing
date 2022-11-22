@@ -1,0 +1,101 @@
+- name: Loader app installation with PostgreSQL
+  hosts: virtualmachines
+  become: yes
+  vars_files:
+    - vars.yaml
+
+  handlers:
+    - name: restart postgres
+      service: name=postgresql state=restarted
+
+  pre_tasks:
+    - name: Ping my hosts
+      ansible.builtin.ping:
+
+    - name: Install Linux packages
+      yum:
+        name:
+          - postgresql
+          - postgresql-server
+          - postgresql-contrib
+          - postgresql-libs
+          - python-psycopg2
+        state: present
+
+    - name: Copy RPMs to server
+      copy:
+        src: "{{ loader_rpm }}"
+        dest: "/tmp/{{ loader_rpm }}"
+
+    - name: Copy Loader App Migrations
+      copy:
+        src: ../migrations
+        dest: /tmp
+
+  tasks:
+    - name: Check if PostgreSQL initialized
+      stat:
+        path: /var/lib/pgsql/data/pg_hba.conf
+      register: postgres_data
+
+    - name: Initialize PostgreSQL
+      shell: postgresql-setup initdb
+      when: not postgres_data.stat.exists
+
+    - name: Create database
+      postgresql_db:
+        state: present
+        name: "{{ db_name }}"
+      become: yes
+      become_user: postgres
+
+    - name: Create database user
+      postgresql_user:
+        state: present
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+      become: yes
+      become_user: postgres
+
+    - name: Grant database access to created user
+      postgresql_privs:
+        type: database
+        database: "{{ db_name }}"
+        roles: "{{ db_user }}"
+        grant_option: no
+        privs: all
+      become: yes
+      become_user: postgres
+
+    - name: Install rpm
+      yum:
+        name: "/tmp/{{ loader_rpm }}"
+        state: present
+
+    - name: Allow md5 connection for the db user
+      postgresql_pg_hba:
+        dest: "~/data/pg_hba.conf"
+        contype: local
+        databases: all
+        method: md5
+        users: "{{ db_user }}"
+        create: true
+      become: yes
+      become_user: postgres
+      notify: restart postgres
+
+    - name: Execute migrations for Loader App
+      shell:
+        cmd: loader migrate
+        chdir: /tmp
+      environment:
+        RUST_LOG: debug
+        DATABASE_URL: "postgres://{{ db_user }}:{{ db_password }}@localhost:5432/{{ db_name }}"
+
+    - name: Run Loader App
+      shell: setsid loader api > /dev/null 2>&1 < /dev/null &
+      environment:
+        RUST_LOG: debug
+        ROCKET_PORT: 8001
+        ROCKET_ADDRESS: "{{ ansible_host }}"
+        DATABASE_URL: "postgres://{{ db_user }}:{{ db_password }}@localhost:5432/{{ db_name }}"

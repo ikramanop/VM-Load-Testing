@@ -1,6 +1,6 @@
 create extension if not exists "uuid-ossp";
 
-create table task
+create table if not exists task
 (
     id         serial  not null primary key,
     uuid       uuid    not null default uuid_generate_v4(),
@@ -10,7 +10,7 @@ create table task
     meta       text    not null
 );
 
-create table queue
+create table if not exists queue
 (
     id       serial  not null primary key,
     task_id  integer not null references task (id),

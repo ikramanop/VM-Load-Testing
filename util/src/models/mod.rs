@@ -18,6 +18,7 @@ pub type ApiResult<T> = Result<T, ApiErrorMessage>;
 pub enum ApiErrors {
     DatabaseError = -127,
     UrlParseError = -126,
+    QueueError = -125,
 }
 
 impl ApiErrors {

@@ -1,5 +1,157 @@
 {
   "db": "PostgreSQL",
+  "0781d8bec00fe966310a07351fb25df6ceb2287b2faa5c2142ee2da9fbacde2a": {
+    "describe": {
+      "columns": [
+        {
+          "name": "avg",
+          "ordinal": 0,
+          "type_info": "Float8"
+        },
+        {
+          "name": "std",
+          "ordinal": 1,
+          "type_info": "Float8"
+        },
+        {
+          "name": "min",
+          "ordinal": 2,
+          "type_info": "Float8"
+        },
+        {
+          "name": "max",
+          "ordinal": 3,
+          "type_info": "Float8"
+        }
+      ],
+      "nullable": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n            select avg(response) avg, stddev(response) std,\n            min(response) min, max(response) max\n            from queue\n            where task_id = $1\n            "
+  },
+  "0d5a56d18fd642e56ceaa8611cbab4fef0422c286f61df8c0550e2d3f9331867": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "uuid!",
+          "ordinal": 1,
+          "type_info": "Text"
+        },
+        {
+          "name": "endpoints",
+          "ordinal": 2,
+          "type_info": "TextArray"
+        },
+        {
+          "name": "status",
+          "ordinal": 3,
+          "type_info": "Text"
+        },
+        {
+          "name": "iterations",
+          "ordinal": 4,
+          "type_info": "Int4"
+        },
+        {
+          "name": "meta",
+          "ordinal": 5,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        null,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            select id, uuid::text as \"uuid!\", endpoints, status, iterations, meta from task\n            where uuid::text = $1\n            "
+  },
+  "10db4c063c58015777ff399c81fb120a7b54d77ea72a1b97afb1aa46ec20e51b": {
+    "describe": {
+      "columns": [
+        {
+          "name": "count!",
+          "ordinal": 0,
+          "type_info": "Int8"
+        }
+      ],
+      "nullable": [
+        null
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n            select count(1) as \"count!\" from queue\n            where task_id = $1 and status != 2\n            "
+  },
+  "243c3bade1fdfbb10bc23df505ee68293253060d01e75202629bc309561c1f3f": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "task_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "endpoint",
+          "ordinal": 2,
+          "type_info": "Text"
+        },
+        {
+          "name": "response",
+          "ordinal": 3,
+          "type_info": "Float8"
+        },
+        {
+          "name": "status",
+          "ordinal": 4,
+          "type_info": "Int4"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        true,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n            select id, task_id, endpoint, response, status from queue\n            where task_id = $1\n            "
+  },
   "4a25a4b57cc3c0bea6b6174e4e9856a09114b57a3de870395d89b2b671672f55": {
     "describe": {
       "columns": [],
@@ -12,6 +164,60 @@
       }
     },
     "query": "\n                insert into queue (task_id, endpoint)\n                values ($1, $2)\n                "
+  },
+  "547bea7f5f629cbd931d0fc52e6334f295c5dcb83c121b54a9a771c70dbd31f1": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "task_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "std",
+          "ordinal": 2,
+          "type_info": "Float8"
+        },
+        {
+          "name": "avg",
+          "ordinal": 3,
+          "type_info": "Float8"
+        },
+        {
+          "name": "min",
+          "ordinal": 4,
+          "type_info": "Float8"
+        },
+        {
+          "name": "max",
+          "ordinal": 5,
+          "type_info": "Float8"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4",
+          "Float8",
+          "Float8",
+          "Float8",
+          "Float8"
+        ]
+      }
+    },
+    "query": "\n            insert into statistics (task_id, avg, std, \"min\", \"max\")\n            values ($1, $2, $3, $4, $5)\n            returning id, task_id, std, avg, \"min\", \"max\"\n            "
   },
   "63819a4dffe312a5798c1fbbc53f9565c78ca7c07a3b8c5d17cf5068b5a67268": {
     "describe": {
@@ -65,6 +271,19 @@
       }
     },
     "query": "\n            insert into task (endpoints, status, iterations, meta)\n            values ($1, $2, $3, $4)\n            returning id, uuid::text as \"uuid!\", endpoints, status, iterations, meta\n            "
+  },
+  "64ea13da34a294b3a572b0358b68888abc15d766eebea4fcada8b1828e3a61d0": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text",
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n            update task set status = $1\n            where id = $2\n            "
   },
   "8960e0a6c2b256916283a5f1d5b99181c98dbab8f3e44ddc9b480c666868f3c7": {
     "describe": {
@@ -140,5 +359,55 @@
       }
     },
     "query": "\n            update queue\n            set\n                status = 2,\n                response = $2\n            where id = $1\n            "
+  },
+  "f0e453a8df8696757c761b8b9babff4fdd26006012df73b07aa70d6939f729d6": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Int4"
+        },
+        {
+          "name": "task_id",
+          "ordinal": 1,
+          "type_info": "Int4"
+        },
+        {
+          "name": "avg",
+          "ordinal": 2,
+          "type_info": "Float8"
+        },
+        {
+          "name": "std",
+          "ordinal": 3,
+          "type_info": "Float8"
+        },
+        {
+          "name": "min",
+          "ordinal": 4,
+          "type_info": "Float8"
+        },
+        {
+          "name": "max",
+          "ordinal": 5,
+          "type_info": "Float8"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Int4"
+        ]
+      }
+    },
+    "query": "\n            select id, task_id, avg, std, \"min\", \"max\"\n            from statistics\n            where task_id = $1\n            "
   }
 }

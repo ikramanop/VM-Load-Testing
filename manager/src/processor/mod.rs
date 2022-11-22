@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::time::Instant;
 use anyhow::anyhow;
 use chrono::NaiveDateTime;
@@ -38,7 +37,7 @@ impl Processor {
 
         match self.loader.create_user(&job.endpoint, ApiUserCreateRequest {
             name: name.clone(),
-            surname: name.clone(),
+            surname: surname.clone(),
             birth_date: NaiveDateTime::parse_from_str("2000-06-15T00:00:00", "%Y-%m-%dT%H:%M:%S").unwrap(),
             company_name: "LLC \"RNG TECH\"".to_string(),
         }).await {
@@ -61,7 +60,7 @@ impl Processor {
 
         match self.loader.delete_user(&job.endpoint, ApiUserDeleteRequest {
             name: name[1..].to_string(),
-            surname: name[1..].to_string(),
+            surname: surname[1..].to_string(),
         }).await {
             Ok(_) => (),
             Err(err) => {

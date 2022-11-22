@@ -2,8 +2,8 @@
 name = "loader"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Loader web server"
+license = "Apache-2.0"
 
 [dependencies]
 util = { version = "0.1.0", path = "../util" }

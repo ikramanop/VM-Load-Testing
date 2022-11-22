@@ -18,3 +18,13 @@ pub(crate) struct QueueItem {
     pub(crate) response: Option<f64>,
     pub(crate) status: i32,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub(crate) struct Statistic {
+    pub(crate) id: i32,
+    pub(crate) task_id: i32,
+    pub(crate) avg: f64,
+    pub(crate) std: f64,
+    pub(crate) min: f64,
+    pub(crate) max: f64,
+}
