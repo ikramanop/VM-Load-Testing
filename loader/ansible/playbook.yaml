@@ -4,11 +4,11 @@
   vars_files:
     - vars.yaml
 
-  handlers:
-    - name: restart postgres
-      service: name=postgresql state=restarted
-
   pre_tasks:
+    - name: Check subnet host
+      debug:
+        msg: "{{ subnet_host }}"
+
     - name: Ping my hosts
       ansible.builtin.ping:
 
@@ -42,6 +42,13 @@
       shell: postgresql-setup initdb
       when: not postgres_data.stat.exists
 
+    - name: Start PostgreSQL service
+      systemd:
+        name: postgresql
+        state: started
+      become: yes
+      become_user: root
+
     - name: Create database
       postgresql_db:
         state: present
@@ -72,7 +79,7 @@
         name: "/tmp/{{ loader_rpm }}"
         state: present
 
-    - name: Allow md5 connection for the db user
+    - name: Allow local md5 connection for the db user
       postgresql_pg_hba:
         dest: "~/data/pg_hba.conf"
         contype: local
@@ -82,7 +89,24 @@
         create: true
       become: yes
       become_user: postgres
-      notify: restart postgres
+
+    - name: Allow host md5 connection for the db user
+      postgresql_pg_hba:
+        dest: "~/data/pg_hba.conf"
+        contype: host
+        databases: all
+        method: md5
+        users: "{{ db_user }}"
+        create: true
+      become: yes
+      become_user: postgres
+
+    - name: Restart PostgreSQL service
+      systemd:
+        name: postgresql
+        state: restarted
+      become: yes
+      become_user: root
 
     - name: Execute migrations for Loader App
       shell:
@@ -93,9 +117,8 @@
         DATABASE_URL: "postgres://{{ db_user }}:{{ db_password }}@localhost:5432/{{ db_name }}"
 
     - name: Run Loader App
-      shell: setsid loader api > /dev/null 2>&1 < /dev/null &
+      shell: "ROCKET_ADDRESS={{ subnet_host }} setsid loader api > /dev/null 2>&1 < /dev/null &"
       environment:
         RUST_LOG: debug
-        ROCKET_PORT: 8001
-        ROCKET_ADDRESS: "{{ ansible_host }}"
+        ROCKET_PORT: 8080
         DATABASE_URL: "postgres://{{ db_user }}:{{ db_password }}@localhost:5432/{{ db_name }}"
