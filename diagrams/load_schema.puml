@@ -36,8 +36,8 @@ entity "Accounting" as accounting {
     date_paid
 }
 
-user ||--o{ affiliation
-accounting ||-right-o{ user
-provider }o--|| affiliation
+user }o--|| affiliation
+accounting }o-right-|| user
+provider ||--o{ affiliation
 
 @enduml

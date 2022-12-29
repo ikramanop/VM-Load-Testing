@@ -1,0 +1,38 @@
+@startuml
+
+entity "Task" as task {
+    id
+    --
+    uuid
+    endpoints
+    status
+    iterations
+    meta
+}
+
+entity "Queue" as queue {
+    id
+    --
+    task_id
+    --
+    endpoint
+    response
+    status
+}
+
+entity "Statistics" as statistics {
+    id
+    --
+    task_id
+    --
+    avg
+    std
+    min
+    max
+}
+
+task ||-left-o{ queue
+task ||-right-o{ statistics
+
+
+@enduml
